@@ -1,0 +1,80 @@
+http://manuales.guebs.com/mysql-5.0/functions.html#date-and-time-functions
+
+https://www.w3schools.com/sql/func_mysql_date_format.asp
+
+
+Jardineria
+SELECT *
+FROM cliente c
+WHERE NOT EXISTS (SELECT *
+                  FROM pago p
+                  WHERE c.codigo_cliente = p.codigo_cliente);
+-- #2. Devuelve un listado que muestre solamente los clientes que sí han realizado algún pago.
+SELECT *
+FROM cliente c
+WHERE EXISTS (SELECT *
+              FROM pago p
+              WHERE c.codigo_cliente = p.codigo_cliente);
+
+Ventas
+-- 15. La facturación que ha tenido la empresa en toda la historia, indicando la base imponible, el 
+-- IVA y el total facturado. La base imponible se calcula sumando el coste del producto por el 
+-- número de unidades vendidas de la tabla detalle_pedido. El IVA es el 21 % de la base 
+-- imponible, y el total la suma de los dos campos anteriores.
+SELECT SUM(dp.precio_unidad * dp.cantidad) AS 'Base Imponible', 
+       SUM((dp.precio_unidad * dp.cantidad) * 0.21) AS 'IVA', 
+       SUM(dp.precio_unidad * dp.cantidad + ((dp.precio_unidad * dp.cantidad) * 0.21)) AS 'Total'
+FROM producto pr INNER JOIN detalle_pedido dp using (codigo_producto)
+                     INNER JOIN pedido pe  using (codigo_pedido)
+                     INNER JOIN cliente c  using (codigo_cliente)
+                     INNER JOIN pago pa 
+
+
+
+-- o Utilizando la función YEAR de MySQL.
+select codigo_cliente, fecha_pago from pago where year(fecha_pago)= 2008;
+-- o Utilizando la función DATE_FORMAT de MySQL.
+select codigo_cliente, fecha_pago from pago where date_format(fecha_pago, '%Y')=2008;
+-- o Sin utilizar ninguna de las funciones anteriores.
+select codigo_cliente, fecha_pago from pago where fecha_pago like '%2008%';
+
+
+-- 9. Devuelve el nombre de los clientes a los que no se les ha entregado a tiempo un pedido.
+select c.nombre_cliente , p.fecha_entrega, p.fecha_esperada 
+from cliente c
+INNER JOIN pedido p on (p.codigo_cliente = c.codigo_cliente)
+where (p.fecha_entrega>p.fecha_esperada);
+
+-- 10. Devuelve un listado con el código de pedido, código de cliente, fecha esperada y fecha de 
+-- entrega de los pedidos cuya fecha de entrega ha sido al menos dos días antes de la fecha 
+-- esperada.
+-- o Utilizando la función ADDDATE de MySQL. SELECT ADDDATE("2017-06-15", INTERVAL 10 DAY);
+select codigo_pedido, codigo_cliente, fecha_esperada, fecha_entrega from pedido
+where  adddate(fecha_esperada, interval 2 day)>= fecha_entrega;
+-- ----------------------------------------------------------
+select codigo_pedido, codigo_cliente, fecha_esperada, fecha_entrega from pedido
+where  adddate(fecha_entrega, interval -2 day)<= fecha_esperada;
+-- o Utilizando la función DATEDIFF de MySQL. SELECT DATEDIFF("2017-06-25", "2017-06-15");
+select codigo_pedido, codigo_cliente, fecha_esperada, fecha_entrega from pedido
+where  datediff(fecha_esperada, fecha_entrega)<=2;
+
+
+SELECT codigo_pedido, codigo_cliente,fecha_esperada,fecha_entrega ,comentarios
+        FROM pedido
+        WHERE fecha_entrega = ADDDATE(fecha_esperada,-2) ;
+        -- -------------------------------------------------
+select codigo_pedido, codigo_cliente, fecha_esperada, fecha_entrega from pedido
+where  adddate(fecha_esperada, interval -2 day)= fecha_entrega;
+
+
+-- -- 1. Devuelve el nombre del cliente con mayor límite de crédito.
+SELECT nombre_cliente, limite_credito
+FROM cliente
+WHERE limite_credito >= ALL(SELECT MAX(limite_credito) 
+                              FROM cliente );
+  -- ----------------------------- para verificar el valor mayor si coicide con el ejercicio anterior                          
+select nombre_cliente, limite_credito from cliente order by limite_credito desc;
+
+
+
+C:\Program Files\MySQL\MySQL Workbench 8.0\data
